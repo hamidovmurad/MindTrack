@@ -1,0 +1,46 @@
+PROJECT DRAFT
+
+MindTrack – Intelligent Mental Healthcare Daily Routine App
+
+
+
+Project Overview
+MindTrack is a mobile application that helps users monitor their mood, track daily
+habits, and improve mental well-being. The app combines computer science and
+psychology by providing personalized feedback, visualizing trends, and
+encouraging positive routines.
+
+Problem Statement:
+Many people struggle with stress, irregular habits, and low self-awareness of their
+mental health. Existing apps often track only mood or habits and provide little
+guidance. MindTrack fills this gap by tracking both and giving insights for
+improvement.
+
+Main Features:
+1. Smart Medication Management
+2. AI Health Assistant (Big Differentiator)
+3. Routine + Habit Builder
+4. Health Metrics Dashboard
+5. Emergency Features (Very Valuable)
+6. Appointment & Doctor Management
+7. Mental Health Support
+8. Nutrition & Hydration Tracker
+9. Gamification (Keeps Users Engaged)
+10. Family / Caregiver Mode
+11. Offline Mode + Sync
+12. Data Export & Reports
+
+Interdisciplinary Aspect:
+• Computer Science: app development, database, data visualization
+• Psychology: habit formation, mood analysis, behavioral insights
+
+Benefits:
+• Helps users track and understand their mood and habits
+• Encourages positive behavior and routine
+• Provides data-driven insights and self-improvement guidance
+
+Technologies will be used:
+Kotlin (back-end)
+Jetpack compose (front-end)
+Firebase (database and backend)
+
