@@ -1,26 +1,24 @@
 package com.app.mindtrack.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.app.mindtrack.model.MoodEntry
 import com.app.mindtrack.model.Habit
 import com.app.mindtrack.ui.resources.TrendingUpIcon
 import com.app.mindtrack.ui.resources.CheckCircleIcon
+import com.app.mindtrack.ui.components.*
 import kotlin.math.roundToInt
 
 /**
  * Dashboard screen showing mood trends, habit completion, and general wellness overview.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     moodEntries: List<MoodEntry> = emptyList(),
@@ -29,19 +27,15 @@ fun DashboardScreen(
     onHabitClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Column(
+    WellnessScreenLayout(
+        title = "Dashboard",
+        showTopBar = true,
         modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
     ) {
-        // Top bar
-        TopAppBar(title = { Text("Dashboard") })
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .wellnessPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Greeting card
@@ -62,7 +56,7 @@ fun DashboardScreen(
                 onHabitClick = onHabitClick
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            WellnessSpacer(height = 24.dp)
         }
     }
 }
@@ -74,12 +68,7 @@ fun DashboardScreen(
 fun GreetingCard() {
     val greeting = "Welcome back! 🌿"
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
-    ) {
+    WellnessCard {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,7 +97,7 @@ fun GreetingCard() {
  */
 @Composable
 fun MoodSummaryCard(moodEntries: List<MoodEntry>) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    WellnessCard {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(
                 modifier = Modifier
@@ -190,7 +179,7 @@ fun MoodSummaryCard(moodEntries: List<MoodEntry>) {
  */
 @Composable
 fun MoodTrendCard(moodEntries: List<MoodEntry>) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    WellnessCard {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
                 "7-Day Mood Trend",
@@ -216,8 +205,8 @@ fun MoodTrendCard(moodEntries: List<MoodEntry>) {
                     verticalAlignment = Alignment.Bottom
                 ) {
                     recentEntries.forEach { entry ->
-                        val barHeightDp = (entry.mood / 10f) * 120f  // calculate as float first
-                        val barHeight = barHeightDp.dp  // convert to Dp
+                        val barHeightDp = (entry.mood / 10f) * 120f
+                        val barHeight = barHeightDp.dp
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -225,16 +214,15 @@ fun MoodTrendCard(moodEntries: List<MoodEntry>) {
                             verticalArrangement = Arrangement.Bottom,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // Mood bar
                             Box(
                                 modifier = Modifier
                                     .width(20.dp)
                                     .height(barHeight)
                                     .background(
                                         color = when {
-                                            entry.mood <= 3 -> Color(0xFFFF6B6B) // Red
-                                            entry.mood <= 6 -> Color(0xFFFFA500) // Orange
-                                            else -> Color(0xFF51CF66)             // Green
+                                            entry.mood <= 3 -> Color(0xFFFF6B6B)
+                                            entry.mood <= 6 -> Color(0xFFFFA500)
+                                            else -> Color(0xFF51CF66)
                                         },
                                         shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
                                     )
@@ -257,7 +245,7 @@ fun MoodTrendCard(moodEntries: List<MoodEntry>) {
  */
 @Composable
 fun HabitCompletionCard(habits: List<Habit>) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    WellnessCard {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(
                 modifier = Modifier
@@ -293,7 +281,6 @@ fun HabitCompletionCard(habits: List<Habit>) {
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    // Progress bar
                     LinearProgressIndicator(
                         progress = { completionRate / 100f },
                         modifier = Modifier
@@ -327,23 +314,17 @@ fun QuickActionsCard(
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        ElevatedButton(
+        WellnessButton(
+            text = "Log Mood",
             onClick = onMoodLoggingClick,
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp)
-        ) {
-            Text("Log Mood")
-        }
+            modifier = Modifier.weight(1f)
+        )
 
-        ElevatedButton(
+        WellnessButton(
+            text = "My Habits",
             onClick = onHabitClick,
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp)
-        ) {
-            Text("My Habits")
-        }
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 

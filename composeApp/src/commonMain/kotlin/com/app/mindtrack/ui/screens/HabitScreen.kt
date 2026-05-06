@@ -1,11 +1,8 @@
 package com.app.mindtrack.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,13 +14,13 @@ import com.app.mindtrack.ui.resources.DeleteIcon
 import com.app.mindtrack.ui.resources.CheckCircleIcon
 import com.app.mindtrack.ui.resources.CloseIcon
 import com.app.mindtrack.ui.resources.BackIcon
+import com.app.mindtrack.ui.components.*
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import kotlin.random.Random
 
 /**
  * Habit management screen: list habits with ability to mark complete or add new habit.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitScreen(
     habitsState: List<Habit> = emptyList(),
@@ -33,55 +30,33 @@ fun HabitScreen(
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // Top bar
-        TopAppBar(
-            title = { Text("My Habits") },
-            navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    BackIcon()
-                }
-            },
-            actions = {
-                IconButton(onClick = onAddHabitClick) {
-                    AddIcon()
-                }
+    WellnessScreenLayout(
+        title = "My Habits",
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                BackIcon()
             }
-        )
-
+        },
+        actions = {
+            IconButton(onClick = onAddHabitClick) {
+                AddIcon()
+            }
+        },
+        modifier = modifier
+    ) {
         if (habitsState.isEmpty()) {
             // Empty state
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CheckCircleIcon(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .padding(bottom = 16.dp)
-                )
-                Text(
-                    "No habits yet",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    "Create your first habit to get started!",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-                Button(onClick = onAddHabitClick) {
-                    Text("Create Habit")
+            WellnessEmptyState(
+                icon = { CheckCircleIcon(modifier = Modifier.size(64.dp)) },
+                title = "No habits yet",
+                description = "Create your first habit to get started!",
+                action = {
+                    WellnessButton(
+                        text = "Create Habit",
+                        onClick = onAddHabitClick
+                    )
                 }
-            }
+            )
         } else {
             // Habits list
             LazyColumn(
@@ -112,26 +87,19 @@ fun HabitCard(
     onDelete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        )
-    ) {
+    WellnessCard(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Checkbox
             Checkbox(
                 checked = habit.enabled,
                 onCheckedChange = { onComplete() },
                 modifier = Modifier.padding(end = 16.dp)
             )
 
-            // Habit info
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -152,26 +120,13 @@ fun HabitCard(
                         )
                     }
                 }
-                // Frequency badge
                 habit.frequency?.let {
                     if (it.isNotEmpty()) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = ButtonDefaults.shape,
-                            modifier = Modifier.padding(top = 8.dp)
-                        ) {
-                            Text(
-                                it,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
+                        WellnessTag(text = it, modifier = Modifier.padding(top = 8.dp))
                     }
                 }
             }
 
-            // Delete button
             IconButton(onClick = onDelete) {
                 DeleteIcon()
             }
@@ -194,25 +149,19 @@ fun AddHabitScreen(
     var frequency by remember { mutableStateOf("daily") }
     var isSaving by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        TopAppBar(
-            title = { Text("Create Habit") },
-            navigationIcon = {
-                IconButton(onClick = onDismiss) {
-                    CloseIcon()
-                }
+    WellnessScreenLayout(
+        title = "Create Habit",
+        navigationIcon = {
+            IconButton(onClick = onDismiss) {
+                CloseIcon()
             }
-        )
-
+        },
+        modifier = modifier
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp)
+                .wellnessPadding()
         ) {
             Text(
                 "Build a new routine",
@@ -221,14 +170,11 @@ fun AddHabitScreen(
             )
 
             // Habit title
-            OutlinedTextField(
+            WellnessTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Habit name") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                singleLine = true
+                label = "Habit name",
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             // Description
@@ -287,7 +233,8 @@ fun AddHabitScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             // Create button
-            Button(
+            WellnessButton(
+                text = "Create Habit",
                 onClick = {
                     isSaving = true
                     val newHabit = Habit(
@@ -301,20 +248,9 @@ fun AddHabitScreen(
                     onHabitCreated(newHabit)
                     isSaving = false
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                enabled = !isSaving && title.isNotEmpty()
-            ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    Text("Create Habit")
-                }
-            }
+                enabled = !isSaving && title.isNotEmpty(),
+                isLoading = isSaving
+            )
         }
     }
 }
