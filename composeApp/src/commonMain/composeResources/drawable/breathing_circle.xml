@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Outer calming circle (breathing ring) -->
+    <circle
+        android:cx="50"
+        android:cy="50"
+        android:r="45"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#52BE80"
+        android:strokeWidth="2"
+        android:alpha="0.6" />
+
+    <!-- Middle circle -->
+    <circle
+        android:cx="50"
+        android:cy="50"
+        android:r="35"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#2E8B57"
+        android:strokeWidth="1.5"
+        android:alpha="0.4" />
+
+    <!-- Inner meditation circle -->
+    <circle
+        android:cx="50"
+        android:cy="50"
+        android:r="20"
+        android:fillColor="#2E8B57"
+        android:alpha="0.8" />
+
+    <!-- Center dot -->
+    <circle
+        android:cx="50"
+        android:cy="50"
+        android:r="5"
+        android:fillColor="#52BE80" />
+</vector>
+

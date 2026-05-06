@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Outer petals -->
+    <path
+        android:pathData="M60,20 Q50,35 55,50 Q60,40 65,50 Q70,35 60,20"
+        android:fillColor="#52BE80"
+        android:alpha="0.8" />
+
+    <path
+        android:pathData="M80,30 Q85,45 75,60 Q80,48 90,55 Q95,40 80,30"
+        android:fillColor="#52BE80"
+        android:alpha="0.8" />
+
+    <path
+        android:pathData="M90,55 Q105,60 100,75 Q95,65 102,75 Q100,85 90,80"
+        android:fillColor="#2E8B57"
+        android:alpha="0.8" />
+
+    <path
+        android:pathData="M80,90 Q90,105 75,100 Q83,95 75,105 Q65,100 75,90"
+        android:fillColor="#2E8B57"
+        android:alpha="0.8" />
+
+    <path
+        android:pathData="M60,100 Q70,115 60,110 Q65,105 60,115 Q55,110 60,100"
+        android:fillColor="#2E8B57"
+        android:alpha="0.8" />
+
+    <path
+        android:pathData="M40,90 Q30,105 45,100 Q37,95 45,105 Q55,100 45,90"
+        android:fillColor="#2E8B57"
+        android:alpha="0.8" />
+
+    <path
+        android:pathData="M30,55 Q15,60 20,75 Q25,65 18,75 Q20,85 30,80"
+        android:fillColor="#2E8B57"
+        android:alpha="0.8" />
+
+    <path
+        android:pathData="M40,30 Q35,45 45,60 Q40,48 30,55 Q25,40 40,30"
+        android:fillColor="#52BE80"
+        android:alpha="0.8" />
+
+    <!-- Center circle -->
+    <circle
+        android:cx="60"
+        android:cy="60"
+        android:r="15"
+        android:fillColor="#1A5276" />
+
+    <!-- Inner circle -->
+    <circle
+        android:cx="60"
+        android:cy="60"
+        android:r="8"
+        android:fillColor="#52BE80" />
+</vector>
+
