@@ -11,7 +11,7 @@ val FreshMint = Color(0xFF52BE80)      // Success indicators & progress bars
 val BrightEmerald = Color(0xFF2ECC71)  // High-priority CTAs
 
 // UI & Surface Colors
-val AppBackground = Color(0xFFF8F9F9)  // Soft white background
+val AppBackground = Color(0xfff7f4f2)  // Soft white background
 val AppSurface = Color(0xFFFFFFFF)     // Card & elevation surface
 val AppError = Color(0xFFE74C3C)       // Soft red for warnings
 
@@ -21,3 +21,10 @@ val TextMediumEmphasis = Color(0xFF566573) // Body text
 val TextDisabled = Color(0xFFABB2B9)       // Placeholders
 val OnBrandText = Color(0xFFFFFFFF)        // Text on primary/secondary
 
+// Mood Colors
+val MoodAngry = Color(0xFFFF843E)       // 1 - Angry
+val MoodUpset = Color(0xFF8CA4EE)       // 2 - Upset
+val MoodSad = Color(0xFFA1E7EB)         // 3 - Sad
+val MoodGood = Color(0xFFFDDD6F)        // 4 - Good
+val MoodHappy = Color(0xFFDFEBFF)       // 5 - Happy
+val MoodSpectacular = Color(0xFFFFA7BC) // 6 - Spectacular

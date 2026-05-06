@@ -1,79 +1,86 @@
 package com.app.mindtrack.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.app.mindtrack.ui.resources.BackIcon
 import com.app.mindtrack.ui.resources.ProfileIcon
+import com.app.mindtrack.ui.components.*
 
 /**
  * Simple profile screen with user info and app preferences.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    userName: String = "Demo User",
-    email: String = "demo@mindtrack.app",
     onBackClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-    ) {
-        TopAppBar(
-            title = { Text("Profile") },
-            navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    BackIcon()
-                }
+    WellnessScreenLayout(
+        title = "Profile",
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                BackIcon()
             }
-        )
+        },
+        modifier = modifier
+    ) {
+        val user = com.app.mindtrack.auth.LocalAuthManager.getCurrentUser()
+        var name by remember { mutableStateOf(user?.name ?: "") }
+        var email by remember { mutableStateOf(user?.email ?: "") }
+        var statusMsg by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .wellnessPadding(),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Profile card
+            WellnessCard {
                 Column(
                     modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     ProfileIcon(modifier = Modifier.size(64.dp))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(userName, style = MaterialTheme.typography.headlineSmall)
-                    Text(email, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Full name") })
+                    OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(statusMsg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Wellness summary
+            WellnessCard {
                 Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Wellness Summary", style = MaterialTheme.typography.titleMedium)
+                    Text("Wellness Summary", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                     Text("Mood tracking: Active", style = MaterialTheme.typography.bodyMedium)
                     Text("Habit reminders: Enabled", style = MaterialTheme.typography.bodyMedium)
                     Text("Last sync: Demo mode", style = MaterialTheme.typography.bodyMedium)
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("App Settings", style = MaterialTheme.typography.titleMedium)
-                    Text("• Email verification login")
-                    Text("• Firebase-ready")
-                    Text("• Demo bypass available for UI preview")
+            // App settings / actions
+            WellnessCard {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        val ok = com.app.mindtrack.auth.LocalAuthManager.updateProfile(email.trim(), name.trim())
+                        statusMsg = if (ok) "Profile saved" else "Failed to save"
+                    }, modifier = Modifier.fillMaxWidth()) { Text("Save Profile") }
+
+                    OutlinedButton(onClick = {
+                        com.app.mindtrack.auth.LocalAuthManager.logout()
+                        onLogoutClick()
+                    }, modifier = Modifier.fillMaxWidth()) { Text("Logout & Clear Local Data") }
                 }
             }
+
+            WellnessSpacer(height = 16.dp)
         }
     }
 }

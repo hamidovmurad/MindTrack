@@ -17,6 +17,8 @@ import com.app.mindtrack.ui.resources.BackIcon
 import com.app.mindtrack.ui.components.*
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import kotlin.random.Random
+import com.app.mindtrack.storage.LocalDataStore
+import com.app.mindtrack.auth.LocalAuthManager
 
 /**
  * Habit management screen: list habits with ability to mark complete or add new habit.
@@ -32,11 +34,6 @@ fun HabitScreen(
 ) {
     WellnessScreenLayout(
         title = "My Habits",
-        navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                BackIcon()
-            }
-        },
         actions = {
             IconButton(onClick = onAddHabitClick) {
                 AddIcon()
@@ -238,14 +235,17 @@ fun AddHabitScreen(
                 text = "Create Habit",
                 onClick = {
                     isSaving = true
+                    val userId = LocalAuthManager.getCurrentUser()?.email ?: "local_guest"
                     val newHabit = Habit(
-                        id = "habit_${Random.nextInt(1000, 9999)}",
-                        userId = "user_placeholder",
+                        id = LocalDataStore.createId("habit"),
+                        userId = userId,
                         title = title,
                         description = if (description.isEmpty()) null else description,
                         frequency = frequency,
                         enabled = true
                     )
+                    // persist locally for demo
+                    LocalDataStore.saveHabit(newHabit)
                     onHabitCreated(newHabit)
                     isSaving = false
                 },

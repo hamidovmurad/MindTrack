@@ -1,10 +1,7 @@
 package com.app.mindtrack.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,12 +13,13 @@ import com.app.mindtrack.ui.resources.InfoIcon
 import com.app.mindtrack.ui.resources.ProfileIcon
 import com.app.mindtrack.ui.resources.ReminderIcon
 import com.app.mindtrack.ui.resources.QuestionIcon
+import com.app.mindtrack.ui.resources.CloseIcon
 import com.app.mindtrack.ui.resources.SettingsIcon
+import com.app.mindtrack.ui.components.*
 
 /**
  * Settings hub that links to Profile, Habit Reminders, Emergency Info, Terms, and FAQ.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onProfileClick: () -> Unit = {},
@@ -29,23 +27,19 @@ fun SettingsScreen(
     onEmergencyClick: () -> Unit = {},
     onTermsClick: () -> Unit = {},
     onFaqClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
+    WellnessScreenLayout(
+        title = "Settings",
+        modifier = modifier,
+        isScrollable = false
     ) {
-        TopAppBar(title = { Text("Settings") })
-
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Header card
+            WellnessCard(modifier = Modifier.wellnessPadding()) {
                 Row(
                     modifier = Modifier.padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -54,41 +48,55 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text("MindTrack settings", style = MaterialTheme.typography.titleMedium)
-                        Text("Manage your app info and support screens", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Manage your app info and support screens", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
 
-            SettingsItem(
-                icon = { ProfileIcon() },
-                title = "Profile",
-                subtitle = "View your account details",
-                onClick = onProfileClick
-            )
-            SettingsItem(
-                icon = { ReminderIcon() },
-                title = "Habit reminders",
-                subtitle = "Open reminder setup",
-                onClick = onRemindersClick
-            )
-            SettingsItem(
-                icon = { InfoIcon() },
-                title = "Emergency features",
-                subtitle = "Basic info for support and safety",
-                onClick = onEmergencyClick
-            )
-            SettingsItem(
-                icon = { DocumentIcon() },
-                title = "Terms & policy",
-                subtitle = "Read app terms and privacy policy",
-                onClick = onTermsClick
-            )
-            SettingsItem(
-                icon = { QuestionIcon() },
-                title = "FAQ",
-                subtitle = "Common questions and answers",
-                onClick = onFaqClick
-            )
+            // Settings items
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wellnessPadding(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SettingsItem(
+                    icon = { ProfileIcon() },
+                    title = "Profile",
+                    subtitle = "View your account details",
+                    onClick = onProfileClick
+                )
+                SettingsItem(
+                    icon = { ReminderIcon() },
+                    title = "Habit reminders",
+                    subtitle = "Open reminder setup",
+                    onClick = onRemindersClick
+                )
+                SettingsItem(
+                    icon = { InfoIcon() },
+                    title = "Emergency features",
+                    subtitle = "Basic info for support and safety",
+                    onClick = onEmergencyClick
+                )
+                SettingsItem(
+                    icon = { DocumentIcon() },
+                    title = "Terms & policy",
+                    subtitle = "Read app terms and privacy policy",
+                    onClick = onTermsClick
+                )
+                SettingsItem(
+                    icon = { QuestionIcon() },
+                    title = "FAQ",
+                    subtitle = "Common questions and answers",
+                    onClick = onFaqClick
+                )
+                SettingsItem(
+                    icon = { CloseIcon() },
+                    title = "Logout",
+                    subtitle = "Sign out and clear local data",
+                    onClick = onLogoutClick
+                )
+            }
         }
     }
 }
@@ -100,10 +108,8 @@ private fun SettingsItem(
     subtitle: String,
     onClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+    WellnessCard(
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),

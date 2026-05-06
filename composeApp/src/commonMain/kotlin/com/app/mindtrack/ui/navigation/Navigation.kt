@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.app.mindtrack.model.Habit
 import com.app.mindtrack.model.MoodEntry
+import com.app.mindtrack.storage.LocalDataStore
+import com.app.mindtrack.auth.LocalAuthManager
 import com.app.mindtrack.ui.resources.AssistantIcon
 import com.app.mindtrack.ui.resources.DashboardIcon
 import com.app.mindtrack.ui.resources.HabitIcon
@@ -62,13 +64,14 @@ private fun isBottomTab(screen: Screen) = screen in bottomTabs
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MindTrackNavigation() {
-    var currentScreen by remember { mutableStateOf(Screen.SignIn) }
+    var currentScreen by remember { mutableStateOf(if (LocalAuthManager.getCurrentUser() != null) Screen.Dashboard else Screen.SignIn) }
     var selectedTab by remember { mutableStateOf(Screen.Dashboard) }
-    var isAuthenticated by remember { mutableStateOf(false) }
+    // Restore authenticated state from local auth manager
+    var isAuthenticated by remember { mutableStateOf(LocalAuthManager.getCurrentUser() != null) }
 
-    // Mock data for demo (in real app, this would come from Firebase/ViewModel)
-    var moodEntries by remember { mutableStateOf<List<MoodEntry>>(emptyList()) }
-    var habits by remember { mutableStateOf<List<Habit>>(emptyList()) }
+    // Load persisted demo data
+    var moodEntries by remember { mutableStateOf<List<MoodEntry>>(LocalDataStore.getAllMoodEntries()) }
+    var habits by remember { mutableStateOf<List<Habit>>(LocalDataStore.getAllHabits()) }
 
     MindTrackTheme {
         when {
@@ -99,24 +102,31 @@ fun MindTrackNavigation() {
                         )
                     }
                 ) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                    Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()).fillMaxSize()) {
                         when (currentScreen) {
                             Screen.Dashboard -> DashboardScreen(
                                 moodEntries = moodEntries,
                                 habits = habits,
-                                onMoodLoggingClick = { currentScreen = Screen.MoodLogging },
-                                onHabitClick = { currentScreen = Screen.Habits }
+                                onMoodLoggingClick = { currentScreen = Screen.MoodLogging }
                             )
 
-                            Screen.Habits -> HabitScreen(
+                                Screen.Habits -> HabitScreen(
                                 habitsState = habits,
                                 onAddHabitClick = { currentScreen = Screen.AddHabit },
                                 onBackClick = { currentScreen = Screen.Dashboard },
                                 onHabitComplete = { habit ->
-                                    habits = habits.map { h -> if (h.id == habit.id) h.copy(enabled = !h.enabled) else h }
+                                        val updated = habits.map { h -> if (h.id == habit.id) {
+                                            val newH = h.copy(enabled = !h.enabled)
+                                            // persist change
+                                            LocalDataStore.saveHabit(newH)
+                                            newH
+                                        } else h }
+                                        habits = updated
                                 },
                                 onHabitDelete = { habit ->
-                                    habits = habits.filter { it.id != habit.id }
+                                        // remove from local store as well
+                                        LocalDataStore.deleteHabit(habit.id)
+                                        habits = habits.filter { it.id != habit.id }
                                 }
                             )
 
@@ -129,7 +139,14 @@ fun MindTrackNavigation() {
                                 onRemindersClick = { currentScreen = Screen.Reminders },
                                 onEmergencyClick = { currentScreen = Screen.EmergencyInfo },
                                 onTermsClick = { currentScreen = Screen.TermsPolicy },
-                                onFaqClick = { currentScreen = Screen.Faq }
+                                onFaqClick = { currentScreen = Screen.Faq },
+                                onLogoutClick = {
+                                    com.app.mindtrack.auth.LocalAuthManager.logout()
+                                    isAuthenticated = false
+                                    currentScreen = Screen.SignIn
+                                    moodEntries = emptyList()
+                                    habits = emptyList()
+                                }
                             )
 
                             else -> Unit
@@ -142,7 +159,8 @@ fun MindTrackNavigation() {
                 MoodLoggingScreen(
                     onBackClick = { currentScreen = selectedTab },
                     onMoodSaved = { entry ->
-                        moodEntries = moodEntries + entry
+                        // reload from local store to reflect daily overwrite behavior
+                        moodEntries = LocalDataStore.getAllMoodEntries()
                         currentScreen = selectedTab
                     }
                 )
@@ -151,7 +169,8 @@ fun MindTrackNavigation() {
             currentScreen == Screen.AddHabit -> {
                 AddHabitScreen(
                     onHabitCreated = { newHabit ->
-                        habits = habits + newHabit
+                        // reload persisted habits
+                        habits = LocalDataStore.getAllHabits()
                         currentScreen = Screen.Habits
                         selectedTab = Screen.Habits
                     },
@@ -160,7 +179,13 @@ fun MindTrackNavigation() {
             }
 
             currentScreen == Screen.Profile -> {
-                ProfileScreen(onBackClick = { currentScreen = Screen.Settings })
+                ProfileScreen(onBackClick = { currentScreen = Screen.Settings }, onLogoutClick = {
+                    com.app.mindtrack.auth.LocalAuthManager.logout()
+                    isAuthenticated = false
+                    currentScreen = Screen.SignIn
+                    moodEntries = emptyList()
+                    habits = emptyList()
+                })
             }
 
             currentScreen == Screen.Reminders -> {
@@ -208,7 +233,10 @@ private fun MindTrackBottomBar(
     selectedScreen: Screen,
     onScreenSelected: (Screen) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface
+    ) {
         NavigationBarItem(
             selected = selectedScreen == Screen.Dashboard,
             onClick = { onScreenSelected(Screen.Dashboard) },

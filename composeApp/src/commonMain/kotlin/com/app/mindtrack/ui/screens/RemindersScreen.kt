@@ -1,9 +1,6 @@
 package com.app.mindtrack.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import com.app.mindtrack.model.Habit
 import com.app.mindtrack.ui.resources.BackIcon
 import com.app.mindtrack.ui.resources.ReminderIcon
+import com.app.mindtrack.ui.components.*
 import kotlin.random.Random
 
 private data class HabitReminder(
@@ -25,7 +23,6 @@ private data class HabitReminder(
  * Habit reminders screen.
  * Shows upcoming reminders and a simple form to add a reminder label/time.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RemindersScreen(
     habitsState: List<Habit> = emptyList(),
@@ -46,28 +43,23 @@ fun RemindersScreen(
         )
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-    ) {
-        TopAppBar(
-            title = { Text("Habit Reminders") },
-            navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    BackIcon()
-                }
+    WellnessScreenLayout(
+        title = "Habit Reminders",
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                BackIcon()
             }
-        )
-
+        },
+        modifier = modifier
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .wellnessPadding(),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Upcoming reminders
+            WellnessCard {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         ReminderIcon(modifier = Modifier.size(28.dp))
@@ -75,7 +67,7 @@ fun RemindersScreen(
                         Text("Upcoming reminders", style = MaterialTheme.typography.titleMedium)
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    WellnessSpacer(height = 12.dp)
 
                     if (reminders.isEmpty()) {
                         Text(
@@ -115,28 +107,25 @@ fun RemindersScreen(
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Add reminder form
+            WellnessCard {
                 Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Add reminder", style = MaterialTheme.typography.titleMedium)
 
-                    OutlinedTextField(
+                    WellnessTextField(
                         value = reminderTitle,
                         onValueChange = { reminderTitle = it },
-                        label = { Text("Habit / reminder title") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        label = "Habit / reminder title"
                     )
 
-                    OutlinedTextField(
+                    WellnessTextField(
                         value = reminderTime,
                         onValueChange = { reminderTime = it },
-                        label = { Text("Time label") },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("e.g. 08:00 AM") },
-                        singleLine = true
+                        label = "Time label"
                     )
 
-                    Button(
+                    WellnessButton(
+                        text = "Add Reminder",
                         onClick = {
                             if (reminderTitle.isNotBlank()) {
                                 reminders = reminders + HabitReminder(
@@ -148,13 +137,12 @@ fun RemindersScreen(
                                 reminderTime = "08:00 AM"
                             }
                         },
-                        enabled = reminderTitle.isNotBlank(),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Add Reminder")
-                    }
+                        enabled = reminderTitle.isNotBlank()
+                    )
                 }
             }
+
+            WellnessSpacer(height = 16.dp)
         }
     }
 }

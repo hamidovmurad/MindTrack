@@ -1,17 +1,15 @@
 package com.app.mindtrack.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.app.mindtrack.ui.resources.AssistantIcon
+import com.app.mindtrack.ui.components.*
 
 private data class ChatMessage(
     val text: String,
@@ -22,7 +20,6 @@ private data class ChatMessage(
  * Simple placeholder AI Health Assistant screen.
  * Shows example wellness guidance and prompt chips.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AIHealthAssistantScreen(
     modifier: Modifier = Modifier
@@ -31,8 +28,8 @@ fun AIHealthAssistantScreen(
     var messages by remember {
         mutableStateOf(
             listOf(
-                ChatMessage("Hi, I’m your MindTrack assistant. I can help with mood, habits, hydration, and routine ideas.", false),
-                ChatMessage("Try asking: ‘How can I improve my sleep routine?’", false)
+                ChatMessage("Hi, I'm your MindTrack assistant. I can help with mood, habits, hydration, and routine ideas.", false),
+                ChatMessage("Try asking: 'How can I improve my sleep routine?'", false)
             )
         )
     }
@@ -44,38 +41,35 @@ fun AIHealthAssistantScreen(
         "Drink more water"
     )
 
-    Column(
+    WellnessScreenLayout(
+        title = "Health Assistant",
         modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
     ) {
-        TopAppBar(title = { Text("AI Health Assistant") })
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .wellnessPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        AssistantIcon(modifier = Modifier.size(28.dp))
-                        Spacer(modifier = Modifier.width(12.dp))
+            // Introduction card
+            WellnessCard {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    AssistantIcon(modifier = Modifier.size(28.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
                         Text("Wellness assistant", style = MaterialTheme.typography.titleMedium)
+                        Text("This is a placeholder AI screen for your final project.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        "This is a placeholder AI screen for your final project. Later, you can connect Firebase, a cloud model, or on-device AI.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Chat messages
+            WellnessCard {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Chat", style = MaterialTheme.typography.titleMedium)
+                    Text("Chat", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 4.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         messages.forEach { message ->
                             Row(
@@ -84,13 +78,14 @@ fun AIHealthAssistantScreen(
                             ) {
                                 Surface(
                                     color = if (message.isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = MaterialTheme.shapes.large,
                                     modifier = Modifier.widthIn(max = 280.dp)
                                 ) {
                                     Text(
                                         message.text,
                                         modifier = Modifier.padding(12.dp),
-                                        color = if (message.isUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = if (message.isUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = MaterialTheme.typography.bodySmall
                                     )
                                 }
                             }
@@ -99,7 +94,8 @@ fun AIHealthAssistantScreen(
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Quick prompts & input
+            WellnessCard {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Quick prompts", style = MaterialTheme.typography.titleMedium)
                     Row(
@@ -127,15 +123,16 @@ fun AIHealthAssistantScreen(
                         }
                     }
 
-                    OutlinedTextField(
+                    WellnessSpacer(height = 8.dp)
+
+                    WellnessTextField(
                         value = prompt,
                         onValueChange = { prompt = it },
-                        label = { Text("Ask the assistant") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        label = "Ask the assistant"
                     )
 
-                    Button(
+                    WellnessButton(
+                        text = "Send",
                         onClick = {
                             if (prompt.isNotBlank()) {
                                 messages = messages + ChatMessage(prompt, true) + ChatMessage(
@@ -145,16 +142,12 @@ fun AIHealthAssistantScreen(
                                 prompt = ""
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
                         enabled = prompt.isNotBlank()
-                    ) {
-                        Text("Send")
-                    }
+                    )
                 }
             }
+
+            WellnessSpacer(height = 16.dp)
         }
     }
 }
-
-
-

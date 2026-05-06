@@ -1,19 +1,38 @@
 package com.app.mindtrack.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.DrawableResource
 import com.app.mindtrack.model.MoodEntry
 import com.app.mindtrack.model.Habit
 import com.app.mindtrack.ui.resources.TrendingUpIcon
 import com.app.mindtrack.ui.resources.CheckCircleIcon
 import com.app.mindtrack.ui.components.*
+import com.app.mindtrack.ui.theme.MoodAngry
+import com.app.mindtrack.ui.theme.MoodUpset
+import com.app.mindtrack.ui.theme.MoodSad
+import com.app.mindtrack.ui.theme.MoodGood
+import com.app.mindtrack.ui.theme.MoodHappy
+import com.app.mindtrack.ui.theme.MoodSpectacular
+import mindtrack.composeapp.generated.resources.Res
+import mindtrack.composeapp.generated.resources.img_home_banner
+import mindtrack.composeapp.generated.resources.img_face_angry
+import mindtrack.composeapp.generated.resources.img_face_upset
+import mindtrack.composeapp.generated.resources.img_face_sad
+import mindtrack.composeapp.generated.resources.img_face_good
+import mindtrack.composeapp.generated.resources.img_face_happy
+import mindtrack.composeapp.generated.resources.img_face_spectacular
 import kotlin.math.roundToInt
 
 /**
@@ -24,7 +43,6 @@ fun DashboardScreen(
     moodEntries: List<MoodEntry> = emptyList(),
     habits: List<Habit> = emptyList(),
     onMoodLoggingClick: () -> Unit = {},
-    onHabitClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     WellnessScreenLayout(
@@ -39,7 +57,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Greeting card
-            GreetingCard()
+            GreetingCard(onMoodLoggingClick = onMoodLoggingClick)
 
             // Mood summary
             MoodSummaryCard(moodEntries)
@@ -50,12 +68,6 @@ fun DashboardScreen(
             // Habit completion overview
             HabitCompletionCard(habits)
 
-            // Quick actions
-            QuickActionsCard(
-                onMoodLoggingClick = onMoodLoggingClick,
-                onHabitClick = onHabitClick
-            )
-
             WellnessSpacer(height = 24.dp)
         }
     }
@@ -65,17 +77,29 @@ fun DashboardScreen(
  * Greeting card with encouraging message based on current hour.
  */
 @Composable
-fun GreetingCard() {
+fun GreetingCard(
+    onMoodLoggingClick: () -> Unit = {}
+) {
     val greeting = "Welcome back! 🌿"
 
     WellnessCard {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Image(
+                painter = painterResource(Res.drawable.img_home_banner),
+                contentDescription = "MindTrack banner",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .clip(RoundedCornerShape(20.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     greeting,
                     style = MaterialTheme.typography.titleLarge,
@@ -84,14 +108,84 @@ fun GreetingCard() {
                 Text(
                     "Let's track your wellness journey today",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(top = 4.dp)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Text(
+                "Take a gentle check-in whenever you need it.",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            WellnessButton(
+                text = "Log Mood",
+                onClick = onMoodLoggingClick,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
 
+private data class MoodDisplayItem(
+    val name: String,
+    val color: Color,
+    val image: DrawableResource,
+)
+
+private fun moodDisplayForValue(value: Int): MoodDisplayItem = when (value) {
+    1, 2 -> MoodDisplayItem("Angry", MoodAngry, Res.drawable.img_face_angry)
+    3, 4 -> MoodDisplayItem("Upset", MoodUpset, Res.drawable.img_face_upset)
+    5 -> MoodDisplayItem("Sad", MoodSad, Res.drawable.img_face_sad)
+    6, 7 -> MoodDisplayItem("Good", MoodGood, Res.drawable.img_face_good)
+    8, 9 -> MoodDisplayItem("Happy", MoodHappy, Res.drawable.img_face_happy)
+    else -> MoodDisplayItem("Spectacular", MoodSpectacular, Res.drawable.img_face_spectacular)
+}
+
+@Composable
+private fun MoodStatCard(
+    title: String,
+    mood: MoodDisplayItem,
+    subtitle: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(18.dp),
+        color = mood.color.copy(alpha = 0.12f)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(mood.image),
+                    contentDescription = mood.name,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    mood.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = mood.color
+                )
+            }
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
 /**
  * Mood summary showing current mood statistics.
  */
@@ -130,45 +224,27 @@ fun MoodSummaryCard(moodEntries: List<MoodEntry>) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "Average",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            average.toString(),
-                            style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "Latest",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            latest.toString(),
-                            style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "Total Entries",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            moodEntries.size.toString(),
-                            style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
+                    MoodStatCard(
+                        title = "Average mood",
+                        mood = moodDisplayForValue(average.coerceIn(1, 10)),
+                        subtitle = "Across your entries",
+                        modifier = Modifier.weight(1f)
+                    )
+                    MoodStatCard(
+                        title = "Latest mood",
+                        mood = moodDisplayForValue(latest.coerceIn(1, 10)),
+                        subtitle = "Most recent check-in",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
+
+                Text(
+                    "Total entries: ${moodEntries.size}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -200,13 +276,14 @@ fun MoodTrendCard(moodEntries: List<MoodEntry>) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        .height(190.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.Bottom
                 ) {
                     recentEntries.forEach { entry ->
                         val barHeightDp = (entry.mood / 10f) * 120f
                         val barHeight = barHeightDp.dp
+                        val mood = moodDisplayForValue(entry.mood.coerceIn(1, 10))
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -214,23 +291,26 @@ fun MoodTrendCard(moodEntries: List<MoodEntry>) {
                             verticalArrangement = Arrangement.Bottom,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            Image(
+                                painter = painterResource(mood.image),
+                                contentDescription = mood.name,
+                                modifier = Modifier.size(22.dp)
+                            )
+
                             Box(
                                 modifier = Modifier
-                                    .width(20.dp)
+                                    .width(22.dp)
                                     .height(barHeight)
                                     .background(
-                                        color = when {
-                                            entry.mood <= 3 -> Color(0xFFFF6B6B)
-                                            entry.mood <= 6 -> Color(0xFFFFA500)
-                                            else -> Color(0xFF51CF66)
-                                        },
+                                        color = mood.color,
                                         shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
                                     )
                             )
                             Text(
-                                entry.mood.toString(),
+                                mood.name,
                                 style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(top = 4.dp)
+                                color = mood.color,
+                                modifier = Modifier.padding(top = 8.dp)
                             )
                         }
                     }
@@ -299,38 +379,4 @@ fun HabitCompletionCard(habits: List<Habit>) {
         }
     }
 }
-
-/**
- * Quick action buttons for common tasks.
- */
-@Composable
-fun QuickActionsCard(
-    onMoodLoggingClick: () -> Unit = {},
-    onHabitClick: () -> Unit = {}
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        WellnessButton(
-            text = "Log Mood",
-            onClick = onMoodLoggingClick,
-            modifier = Modifier.weight(1f)
-        )
-
-        WellnessButton(
-            text = "My Habits",
-            onClick = onHabitClick,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-
-
-
-
-
 

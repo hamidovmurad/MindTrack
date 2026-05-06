@@ -28,6 +28,8 @@ import mindtrack.composeapp.generated.resources.Res
 import mindtrack.composeapp.generated.resources.lotus
 import mindtrack.composeapp.generated.resources.breathing_circle
 import androidx.compose.foundation.BorderStroke
+import com.app.mindtrack.auth.LocalAuthManager
+import com.app.mindtrack.auth.User
 
 /**
  * Wellness-focused email sign-in screen for MindTrack.
@@ -47,6 +49,11 @@ fun SignInScreen(
     var isCodeSent by remember { mutableStateOf(false) }
     var isVerifying by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var isLocalMode by remember { mutableStateOf(false) }
+    var isRegisterMode by remember { mutableStateOf(true) }
+    var localName by remember { mutableStateOf("") }
+    var localPassword by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf("") }
 
     // Breathing animation for lotus icon
     val animatedScale by rememberInfiniteTransition().animateFloat(
@@ -58,18 +65,11 @@ fun SignInScreen(
         )
     )
 
-    // Gradient background (calming blues and greens)
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFFE8F5E9), // Light mint
-            AppBackground
-        )
-    )
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(gradientBrush)
+            .background(AppBackground)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 32.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -120,7 +120,120 @@ fun SignInScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        if (!isCodeSent) {
+        // Mode toggle: email verification vs local account
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = { isLocalMode = false }, modifier = Modifier.weight(1f)) {
+                Text("Email Verification")
+            }
+            Button(onClick = { isLocalMode = true }, modifier = Modifier.weight(1f)) {
+                Text("Local Account")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        if (isLocalMode) {
+            // Local register / login flow
+            BreathingCard {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        TextButton(onClick = { isRegisterMode = true }) { Text("Register") }
+                        TextButton(onClick = { isRegisterMode = false }) { Text("Login") }
+                    }
+
+                    if (isRegisterMode) {
+                        TextField(
+                            value = localName,
+                            onValueChange = { localName = it },
+                            label = { Text("Full Name") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                    }
+
+                    TextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email Address") },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF5F5F5),
+                            focusedIndicatorColor = FreshMint,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+
+                    TextField(
+                        value = localPassword,
+                        onValueChange = { localPassword = it },
+                        label = { Text("Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    if (localError.isNotEmpty()) {
+                        Text(localError, color = MaterialTheme.colorScheme.error)
+                    }
+
+                    Button(
+                        onClick = {
+                            localError = ""
+                            if (isRegisterMode) {
+                                if (email.isBlank() || localPassword.isBlank() || localName.isBlank()) {
+                                    localError = "Please provide name, email and password"
+                                    return@Button
+                                }
+                                val ok = LocalAuthManager.register(email.trim(), localPassword, localName.trim())
+                                if (ok) {
+                                    onSignInSuccess()
+                                } else {
+                                    localError = "An account already exists"
+                                }
+                            } else {
+                                if (email.isBlank() || localPassword.isBlank()) {
+                                    localError = "Please provide email and password"
+                                    return@Button
+                                }
+                                val ok = LocalAuthManager.login(email.trim(), localPassword)
+                                if (ok) onSignInSuccess() else localError = "Invalid credentials"
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = FreshMint,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(if (isRegisterMode) "Register & Continue" else "Login")
+                    }
+
+                    OutlinedButton(onClick = {
+                        // Clear local stored data (logout / reset)
+                        LocalAuthManager.logout()
+                        localError = "Local data cleared"
+                        email = ""
+                        localPassword = ""
+                        localName = ""
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Clear Local Data / Logout")
+                    }
+                }
+            }
+        } else if (!isCodeSent) {
             // Step 1: Email Entry
             BreathingCard {
                 Column(
@@ -364,8 +477,7 @@ private fun BreathingCard(
         modifier = modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
-        shadowElevation = 8.dp
+        color = Color.White
     ) {
         content()
     }

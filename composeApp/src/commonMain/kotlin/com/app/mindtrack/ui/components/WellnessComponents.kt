@@ -41,17 +41,12 @@ fun WellnessScreenLayout(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFFE8F5E9),
-            AppBackground
-        )
-    )
+
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(gradientBrush)
+            .background(AppBackground)
     ) {
         if (showTopBar) {
             WellnessTopAppBar(
@@ -94,13 +89,13 @@ fun WellnessTopAppBar(
         title = {
             Text(
                 title,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleMedium,
                 color = DeepOceanBlue
             )
         },
         navigationIcon = navigationIcon ?: {},
         actions = actions ?: {},
-        modifier = modifier,
+        modifier = modifier.statusBarsPadding(),
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White,
             titleContentColor = DeepOceanBlue,
@@ -116,14 +111,12 @@ fun WellnessTopAppBar(
 @Composable
 fun WellnessCard(
     modifier: Modifier = Modifier,
-    elevation: Dp = 8.dp,
     content: @Composable () -> Unit
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
-        shadowElevation = elevation
+        color = Color.White
     ) {
         content()
     }
