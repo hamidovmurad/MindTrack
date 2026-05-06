@@ -32,13 +32,14 @@ fun MyScreen(modifier: Modifier = Modifier) {
 }
 ```
 
-### ✅ AFTER: Wellness Design
+### ✅ AFTER: Wellness Design (Static Content)
 ```kotlin
 @Composable
 fun MyScreen(modifier: Modifier = Modifier) {
     WellnessScreenLayout(
         title = "My Screen",
         modifier = modifier
+        // isScrollable = true (default) for static Column content
     ) {
         Column(
             modifier = Modifier
@@ -52,9 +53,53 @@ fun MyScreen(modifier: Modifier = Modifier) {
 }
 ```
 
+### ✅ AFTER: Wellness Design (With LazyColumn)
+```kotlin
+@Composable
+fun MyListScreen(modifier: Modifier = Modifier, items: List<Item> = emptyList()) {
+    WellnessScreenLayout(
+        title = "My List",
+        modifier = modifier,
+        isScrollable = false  // LazyColumn handles its own scrolling
+    ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(items) { item ->
+                // Item content
+            }
+        }
+    }
+}
+```
+
+**⚠️ IMPORTANT: Nested Scrolling Rule**
+- Set `isScrollable = true` (default) when using **static Column** content
+- Set `isScrollable = false` when content contains **LazyColumn**, **LazyRow**, or other scrollable containers
+- This prevents the "measured with infinity constraints" error from nested scrollable layouts
+
 ---
 
 ## Component Mapping Reference
+
+### WellnessScreenLayout Parameters
+```kotlin
+WellnessScreenLayout(
+    title: String = "",                              // Top bar title
+    navigationIcon: @Composable (() -> Unit)? = null, // Back/menu button
+    actions: @Composable (RowScope.() -> Unit)? = null, // Right-side buttons
+    showTopBar: Boolean = true,                      // Show/hide top app bar
+    isScrollable: Boolean = true,                    // ⚠️ IMPORTANT! See nested scrolling rule below
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit                  // Screen content
+)
+```
+
+**Scrollable Parameter Guide:**
+| Scenario | isScrollable | Reason |
+|----------|-------------|--------|
+| Static Column content | `true` (default) | Column content will be wrapped with verticalScroll() |
+| LazyColumn/LazyRow | `false` | These handle their own scrolling; nesting causes errors |
+| Form fields + Button | `true` (default) | Static layout, needs scrolling for small screens |
+| List of items | `false` | Use LazyColumn, let it handle scrolling |
 
 ### Screens to Refactor
 1. **MoodLoggingScreen** - Mood entry form
@@ -435,6 +480,8 @@ Use this checklist when refactoring each screen:
 
 - [ ] Add import: `import com.app.mindtrack.ui.components.*`
 - [ ] Replace outer `Column` + `background` with `WellnessScreenLayout`
+- [ ] **Set `isScrollable = false` if using LazyColumn/LazyRow** ⚠️
+- [ ] **Set `isScrollable = true` (default) for static Column content** ✅
 - [ ] Replace `TopAppBar` call (handled by WellnessScreenLayout)
 - [ ] Replace `.padding(16.dp)` with `.wellnessPadding()`
 - [ ] Replace `Card()` with `WellnessCard {}`
@@ -500,4 +547,7 @@ Use this checklist when refactoring each screen:
 **Last Updated:** May 6, 2026  
 **Architecture Version:** 1.0  
 **Component Library:** WellnessComponents.kt
+
+
+
 

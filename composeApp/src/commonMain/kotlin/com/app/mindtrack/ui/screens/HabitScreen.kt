@@ -42,6 +42,7 @@ fun HabitScreen(
                 AddIcon()
             }
         },
+        isScrollable = false,  // LazyColumn handles scrolling
         modifier = modifier
     ) {
         if (habitsState.isEmpty()) {

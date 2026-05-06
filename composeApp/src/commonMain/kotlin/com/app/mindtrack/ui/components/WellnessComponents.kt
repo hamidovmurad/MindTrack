@@ -28,6 +28,8 @@ import com.app.mindtrack.ui.theme.AppBackground
 /**
  * Wellness Screen Layout - Main container for all screens with gradient background and scrolling
  * Handles common layout patterns to avoid repetition
+ *
+ * @param isScrollable Set to false when content contains LazyColumn, LazyRow, or other scrollable containers
  */
 @Composable
 fun WellnessScreenLayout(
@@ -35,6 +37,7 @@ fun WellnessScreenLayout(
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null,
     showTopBar: Boolean = true,
+    isScrollable: Boolean = true,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
@@ -58,12 +61,20 @@ fun WellnessScreenLayout(
             )
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            content()
+        if (isScrollable) {
+            // For static content - apply vertical scroll
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                content()
+            }
+        } else {
+            // For scrollable content (LazyColumn, LazyRow, etc.)
+            Box(modifier = Modifier.fillMaxSize()) {
+                content()
+            }
         }
     }
 }
@@ -454,6 +465,7 @@ fun WellnessTag(
         )
     }
 }
+
 
 
 
