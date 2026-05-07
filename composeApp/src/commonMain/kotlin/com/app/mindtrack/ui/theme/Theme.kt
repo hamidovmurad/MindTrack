@@ -11,10 +11,10 @@ import androidx.compose.ui.graphics.Color
  * Light color scheme using MindTrack brand colors
  */
 private val LightColorScheme = lightColorScheme(
-    primary = DeepOceanBlue,
+    primary = FreshMint,
     onPrimary = OnBrandText,
     primaryContainer = Color(0xFFDEEBF8),
-    onPrimaryContainer = DeepOceanBlue,
+    onPrimaryContainer = FreshMint,
 
     secondary = ForestTeal,
     onSecondary = OnBrandText,

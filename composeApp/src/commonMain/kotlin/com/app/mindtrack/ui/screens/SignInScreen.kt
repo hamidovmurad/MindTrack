@@ -1,35 +1,70 @@
 package com.app.mindtrack.ui.screens
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.EaseInOutQuad
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.mindtrack.ui.theme.FreshMint
-import com.app.mindtrack.ui.theme.ForestTeal
-import com.app.mindtrack.ui.theme.DeepOceanBlue
-import com.app.mindtrack.ui.theme.AppBackground
-import org.jetbrains.compose.resources.painterResource
-import mindtrack.composeapp.generated.resources.Res
-import mindtrack.composeapp.generated.resources.lotus
-import mindtrack.composeapp.generated.resources.breathing_circle
-import androidx.compose.foundation.BorderStroke
 import com.app.mindtrack.auth.LocalAuthManager
-import com.app.mindtrack.auth.User
+import com.app.mindtrack.ui.components.WellnessButton
+import com.app.mindtrack.ui.components.WellnessCard
+import com.app.mindtrack.ui.components.WellnessOutlinedButton
+import com.app.mindtrack.ui.components.WellnessTextField
+import com.app.mindtrack.ui.theme.AppBackground
+import com.app.mindtrack.ui.theme.DeepOceanBlue
+import com.app.mindtrack.ui.theme.ForestTeal
+import com.app.mindtrack.ui.theme.FreshMint
+import mindtrack.composeapp.generated.resources.Res
+import mindtrack.composeapp.generated.resources.img_face_happy
+import mindtrack.composeapp.generated.resources.img_logo
+import mindtrack.composeapp.generated.resources.lotus
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * Wellness-focused email sign-in screen for MindTrack.
@@ -55,16 +90,6 @@ fun SignInScreen(
     var localPassword by remember { mutableStateOf("") }
     var localError by remember { mutableStateOf("") }
 
-    // Breathing animation for lotus icon
-    val animatedScale by rememberInfiniteTransition().animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = EaseInOutQuad),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
 
     Column(
         modifier = modifier
@@ -75,20 +100,9 @@ fun SignInScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(72.dp))
 
-        // Animated Lotus Icon (calming visual)
-        Icon(
-            painter = painterResource(Res.drawable.lotus),
-            contentDescription = "MindTrack meditation",
-            tint = ForestTeal,
-            modifier = Modifier
-                .size(100.dp)
-                .scale(animatedScale)
-                .alpha(0.9f)
-        )
 
-        Spacer(modifier = Modifier.height(20.dp))
 
         // Header - Wellness focused
         Text(
@@ -120,50 +134,106 @@ fun SignInScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Mode toggle: email verification vs local account
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = { isLocalMode = false }, modifier = Modifier.weight(1f)) {
-                Text("Email Verification")
-            }
-            Button(onClick = { isLocalMode = true }, modifier = Modifier.weight(1f)) {
-                Text("Local Account")
+        // Mode toggle: modern tab-style
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(if (!isLocalMode) FreshMint else Color.Transparent)
+                        .clickable { isLocalMode = false },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Email Link",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = if (!isLocalMode) Color.White else ForestTeal
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(if (isLocalMode) FreshMint else Color.Transparent)
+                        .clickable { isLocalMode = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Local Account",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = if (isLocalMode) Color.White else ForestTeal
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         if (isLocalMode) {
             // Local register / login flow
-            BreathingCard {
+            WellnessCard {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        TextButton(onClick = { isRegisterMode = true }) { Text("Register") }
-                        TextButton(onClick = { isRegisterMode = false }) { Text("Login") }
+                    // Register / Login sub-toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        TextButton(
+                            onClick = { isRegisterMode = true },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = if (isRegisterMode) FreshMint else Color.Gray
+                            )
+                        ) {
+                            Text("Register", fontWeight = if (isRegisterMode) FontWeight.Bold else FontWeight.Normal)
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        TextButton(
+                            onClick = { isRegisterMode = false },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = if (!isRegisterMode) FreshMint else Color.Gray
+                            )
+                        ) {
+                            Text("Login", fontWeight = if (!isRegisterMode) FontWeight.Bold else FontWeight.Normal)
+                        }
                     }
 
                     if (isRegisterMode) {
-                        TextField(
+                        WellnessTextField(
                             value = localName,
                             onValueChange = { localName = it },
-                            label = { Text("Full Name") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
+                            label = "Full Name"
                         )
                     }
 
-                    TextField(
+                    WellnessTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email Address") },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        label = "Email Address",
+                        keyboardType = KeyboardType.Email
+                    )
+
+                    TextField(
+                        value = localPassword,
+                        onValueChange = { localPassword = it },
+                        label = { Text("Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = TextFieldDefaults.colors(
@@ -174,27 +244,23 @@ fun SignInScreen(
                         )
                     )
 
-                    TextField(
-                        value = localPassword,
-                        onValueChange = { localPassword = it },
-                        label = { Text("Password") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-
                     if (localError.isNotEmpty()) {
-                        Text(localError, color = MaterialTheme.colorScheme.error)
+                        Text(
+                            localError,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center
+                        )
                     }
 
-                    Button(
+                    WellnessButton(
+                        text = if (isRegisterMode) "Register & Continue" else "Login",
                         onClick = {
                             localError = ""
                             if (isRegisterMode) {
                                 if (email.isBlank() || localPassword.isBlank() || localName.isBlank()) {
                                     localError = "Please provide name, email and password"
-                                    return@Button
+                                    return@WellnessButton
                                 }
                                 val ok = LocalAuthManager.register(email.trim(), localPassword, localName.trim())
                                 if (ok) {
@@ -205,37 +271,28 @@ fun SignInScreen(
                             } else {
                                 if (email.isBlank() || localPassword.isBlank()) {
                                     localError = "Please provide email and password"
-                                    return@Button
+                                    return@WellnessButton
                                 }
                                 val ok = LocalAuthManager.login(email.trim(), localPassword)
                                 if (ok) onSignInSuccess() else localError = "Invalid credentials"
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = FreshMint,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text(if (isRegisterMode) "Register & Continue" else "Login")
-                    }
+                        }
+                    )
 
-                    OutlinedButton(onClick = {
-                        // Clear local stored data (logout / reset)
+                    TextButton(onClick = {
                         LocalAuthManager.logout()
                         localError = "Local data cleared"
                         email = ""
                         localPassword = ""
                         localName = ""
-                    }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Clear Local Data / Logout")
+                    }) {
+                        Text("Reset / Logout", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }
         } else if (!isCodeSent) {
             // Step 1: Email Entry
-            BreathingCard {
+            WellnessCard {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -245,7 +302,7 @@ fun SignInScreen(
                 ) {
                     Text(
                         "Enter your email",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = DeepOceanBlue,
                         textAlign = TextAlign.Center
                     )
@@ -257,24 +314,13 @@ fun SignInScreen(
                         textAlign = TextAlign.Center
                     )
 
-                    TextField(
+                    WellnessTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email Address") },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFF5F5F5),
-                            focusedIndicatorColor = FreshMint,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
+                        label = "Email Address",
+                        keyboardType = KeyboardType.Email
                     )
 
-                    // Error message with caring tone
                     if (errorMessage.isNotEmpty()) {
                         Text(
                             errorMessage,
@@ -282,52 +328,29 @@ fun SignInScreen(
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(
-                                    Color(0xFFFFEBEE),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                                .background(Color(0xFFFFEBEE), shape = RoundedCornerShape(12.dp))
                                 .padding(12.dp),
                             textAlign = TextAlign.Center
                         )
                     }
 
-                    // Send Code button with rounded style
-                    Button(
+                    WellnessButton(
+                        text = "Send Verification Code",
                         onClick = {
                             isVerifying = true
                             errorMessage = ""
-                            // TODO: Call Firebase Auth to send verification code
+                            // Simulate code sending
                             isCodeSent = true
                             isVerifying = false
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
                         enabled = !isVerifying && email.isNotEmpty() && email.contains("@"),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = FreshMint,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        if (isVerifying) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                "Send Verification Code",
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                        }
-                    }
+                        isLoading = isVerifying
+                    )
                 }
             }
         } else {
             // Step 2: Verification Code Entry
-            BreathingCard {
+            WellnessCard {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -337,7 +360,7 @@ fun SignInScreen(
                 ) {
                     Text(
                         "Verify Your Identity",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = DeepOceanBlue,
                         textAlign = TextAlign.Center
                     )
@@ -346,28 +369,16 @@ fun SignInScreen(
                         "Enter the verification code sent to:\n$email",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        textAlign = TextAlign.Center
                     )
 
-                    TextField(
+                    WellnessTextField(
                         value = verificationCode,
                         onValueChange = { verificationCode = it },
-                        label = { Text("6-digit Code") },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFF5F5F5),
-                            focusedIndicatorColor = FreshMint,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
+                        label = "6-digit Code",
+                        keyboardType = KeyboardType.Number
                     )
 
-                    // Error message
                     if (errorMessage.isNotEmpty()) {
                         Text(
                             errorMessage,
@@ -375,17 +386,14 @@ fun SignInScreen(
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(
-                                    Color(0xFFFFEBEE),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                                .background(Color(0xFFFFEBEE), shape = RoundedCornerShape(12.dp))
                                 .padding(12.dp),
                             textAlign = TextAlign.Center
                         )
                     }
 
-                    // Verify button
-                    Button(
+                    WellnessButton(
+                        text = "Verify Code",
                         onClick = {
                             isVerifying = true
                             errorMessage = ""
@@ -396,51 +404,18 @@ fun SignInScreen(
                                 isVerifying = false
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
                         enabled = !isVerifying && verificationCode.length == 6,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = FreshMint,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        if (isVerifying) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                "Verify Code",
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                        }
-                    }
+                        isLoading = isVerifying
+                    )
 
-                    // Back button with wellness styling
-                    OutlinedButton(
+                    WellnessOutlinedButton(
+                        text = "Go Back",
                         onClick = {
                             isCodeSent = false
                             verificationCode = ""
                             errorMessage = ""
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = ForestTeal
-                        ),
-                        border = BorderStroke(2.dp, ForestTeal)
-                    ) {
-                        Text(
-                            "Go Back",
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
@@ -462,23 +437,5 @@ fun SignInScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-/**
- * Calming card container with soft shadow and rounded corners
- */
-@Composable
-private fun BreathingCard(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = Color.White
-    ) {
-        content()
     }
 }

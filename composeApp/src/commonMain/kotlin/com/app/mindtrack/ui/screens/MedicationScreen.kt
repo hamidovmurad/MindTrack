@@ -5,6 +5,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,29 +53,72 @@ fun MedicationScreen(
             // Empty state
             WellnessEmptyState(
                 icon = { PharmacyIcon(modifier = Modifier.size(64.dp)) },
-                title = "No medications",
-                description = "Add your medications here",
+                title = "No medications logged",
+                description = "Keep track of your supplements and prescribed medicines here.",
                 action = {
                     WellnessButton(
-                        text = "Add Medication",
+                        text = "Add First Medication",
                         onClick = onAddMedicationClick
                     )
                 }
             )
         } else {
-            // Medications list
+            // Medications list with summary
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    MedicationSummaryCard(medicationsState.count { it.active }, medicationsState.size)
+                }
+
+                item {
+                    Text(
+                        "Current Medications",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
                 items(medicationsState) { medication ->
                     MedicationCard(
                         medication = medication,
                         onDelete = { onMedicationDelete(medication) }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MedicationSummaryCard(activeCount: Int, total: Int) {
+    WellnessCard {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                PharmacyIcon(modifier = Modifier.size(28.dp))
+            }
+            
+            Column {
+                Text(
+                    "Medication Tracker",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    "$activeCount active medications of $total total",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -85,65 +133,58 @@ fun MedicationCard(
     onDelete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    WellnessCard(modifier = modifier) {
+    WellnessCard(
+        modifier = modifier
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Medication icon
-            PharmacyIcon(
-                modifier = Modifier
-                    .size(40.dp)
-                    .padding(end = 16.dp)
-            )
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    PharmacyIcon(modifier = Modifier.size(24.dp))
+                }
+            }
 
-            // Medication info
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 16.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 Text(
                     medication.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
-                medication.dosage?.let {
-                    if (it.isNotEmpty()) {
-                        Text(
-                            "Dosage: $it",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
+                
+                if (!medication.dosage.isNullOrEmpty() || !medication.schedule.isNullOrEmpty()) {
+                    val info = listOfNotNull(medication.dosage, medication.schedule).joinToString(" • ")
+                    Text(
+                        info,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
                 }
-                medication.schedule?.let {
-                    if (it.isNotEmpty()) {
-                        Text(
-                            "Schedule: $it",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
-                }
-                // Active status badge
+
                 Row(modifier = Modifier.padding(top = 8.dp)) {
-                    val statusColor = if (medication.active) Color(0xFF51CF66) else Color.Gray
                     WellnessTag(
                         text = if (medication.active) "Active" else "Inactive",
-                        backgroundColor = statusColor.copy(alpha = 0.2f),
-                        textColor = statusColor
+                        backgroundColor = if (medication.active) Color(0xFFE7F5E9) else Color(0xFFF1F3F5),
+                        textColor = if (medication.active) Color(0xFF2B8A3E) else Color(0xFF495057)
                     )
                 }
             }
 
-            // Delete button
             IconButton(onClick = onDelete) {
-                DeleteIcon()
+                DeleteIcon(modifier = Modifier.size(20.dp))
             }
         }
     }
@@ -184,19 +225,24 @@ fun AddMedicationScreen(
             )
 
             // Medication name
-            WellnessTextField(
+            OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = "Medication name",
-                modifier = Modifier.padding(bottom = 16.dp)
+                label = { Text("Medication name") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             )
 
+
             // Dosage
-            WellnessTextField(
+            OutlinedTextField(
                 value = dosage,
                 onValueChange = { dosage = it },
-                label = "Dosage (optional)",
-                modifier = Modifier.padding(bottom = 16.dp)
+                label = { Text("Dosage (optional)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             )
 
             // Schedule

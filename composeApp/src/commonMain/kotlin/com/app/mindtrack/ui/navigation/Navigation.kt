@@ -107,7 +107,10 @@ fun MindTrackNavigation() {
                             Screen.Dashboard -> DashboardScreen(
                                 moodEntries = moodEntries,
                                 habits = habits,
-                                onMoodLoggingClick = { currentScreen = Screen.MoodLogging }
+                                onMoodLoggingClick = { currentScreen = Screen.MoodLogging },
+                                onHabitsClick = { currentScreen = Screen.Habits },
+                                onNutritionClick = { currentScreen = Screen.Nutrition },
+                                onMedsClick = { currentScreen = Screen.Medications }
                             )
 
                                 Screen.Habits -> HabitScreen(

@@ -95,13 +95,17 @@ fun WellnessTopAppBar(
         },
         navigationIcon = navigationIcon ?: {},
         actions = actions ?: {},
-        modifier = modifier.statusBarsPadding(),
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White,
+            containerColor = AppBackground,
             titleContentColor = DeepOceanBlue,
             navigationIconContentColor = DeepOceanBlue,
             actionIconContentColor = DeepOceanBlue
         )
+    )
+    HorizontalDivider(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFE0E0E0),
+        thickness = 0.5.dp
     )
 }
 
@@ -111,12 +115,13 @@ fun WellnessTopAppBar(
 @Composable
 fun WellnessCard(
     modifier: Modifier = Modifier,
+    containerColor: Color = Color.White,
     content: @Composable () -> Unit
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White
+        color = containerColor
     ) {
         content()
     }

@@ -11,7 +11,7 @@ val FreshMint = Color(0xFF52BE80)      // Success indicators & progress bars
 val BrightEmerald = Color(0xFF2ECC71)  // High-priority CTAs
 
 // UI & Surface Colors
-val AppBackground = Color(0xfff7f4f2)  // Soft white background
+val AppBackground = Color(0xfff7f7f7)  // Soft white background
 val AppSurface = Color(0xFFFFFFFF)     // Card & elevation surface
 val AppError = Color(0xFFE74C3C)       // Soft red for warnings
 

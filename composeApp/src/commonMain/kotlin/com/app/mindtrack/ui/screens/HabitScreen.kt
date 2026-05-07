@@ -5,9 +5,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.foundation.shape.CircleShape
 import com.app.mindtrack.model.Habit
 import com.app.mindtrack.ui.resources.AddIcon
 import com.app.mindtrack.ui.resources.DeleteIcon
@@ -56,13 +62,26 @@ fun HabitScreen(
                 }
             )
         } else {
-            // Habits list
+            // Habits list with summary
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    val completed = habitsState.count { it.enabled }
+                    val total = habitsState.size
+                    HabitSummaryCard(completed, total)
+                }
+
+                item {
+                    Text(
+                        "Your Daily Habits",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
                 items(habitsState) { habit ->
                     HabitCard(
                         habit = habit,
@@ -70,6 +89,44 @@ fun HabitScreen(
                         onDelete = { onHabitDelete(habit) }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HabitSummaryCard(completed: Int, total: Int) {
+    val progress = if (total > 0) completed.toFloat() / total else 0f
+    WellnessCard {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(64.dp)) {
+                CircularProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxSize(),
+                    strokeWidth = 6.dp,
+                    strokeCap = StrokeCap.Round,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+                Text(
+                    "${(progress * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            }
+            
+            Column {
+                Text(
+                    "Daily Progress",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    "$completed of $total habits completed today",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -85,28 +142,50 @@ fun HabitCard(
     onDelete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    WellnessCard(modifier = modifier) {
+    val backgroundColor = if (habit.enabled) {
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
+    WellnessCard(
+        modifier = modifier,
+        containerColor = backgroundColor
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
-                checked = habit.enabled,
-                onCheckedChange = { onComplete() },
-                modifier = Modifier.padding(end = 16.dp)
-            )
+            IconButton(
+                onClick = onComplete,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (habit.enabled) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+            ) {
+                CheckCircleIcon(
+                    modifier = Modifier.size(24.dp)
+                )
+            }
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 16.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 Text(
                     habit.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (habit.enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        textDecoration = if (habit.enabled) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                    ),
+                    color = if (habit.enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) 
+                            else MaterialTheme.colorScheme.onSurface
                 )
                 habit.description?.let {
                     if (it.isNotEmpty()) {
@@ -114,19 +193,15 @@ fun HabitCard(
                             it,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 4.dp)
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
-                    }
-                }
-                habit.frequency?.let {
-                    if (it.isNotEmpty()) {
-                        WellnessTag(text = it, modifier = Modifier.padding(top = 8.dp))
                     }
                 }
             }
 
             IconButton(onClick = onDelete) {
-                DeleteIcon()
+                DeleteIcon(modifier = Modifier.size(20.dp))
             }
         }
     }
@@ -168,11 +243,13 @@ fun AddHabitScreen(
             )
 
             // Habit title
-            WellnessTextField(
+            OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = "Habit name",
-                modifier = Modifier.padding(bottom = 16.dp)
+                label = { Text("Habit name") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             )
 
             // Description
