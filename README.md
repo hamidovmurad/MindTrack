@@ -2,6 +2,14 @@
 
 A multiplatform mental healthcare app built with **Kotlin Multiplatform (KMP)** and **Jetpack Compose**, supporting both Android and iOS from a single codebase.
 
+## Group3 – Team Members
+
+1. Murad Hamidov — 62319  
+2. Chinonso Ali — 62923  
+3. Rasul Eminli — 65981  
+4. Christianah Alabi — 61276  
+5. Gaya Dahmouche — 66167
+
 ## Features
 
 - **Mood Tracking** - Daily mood logging with insights
@@ -106,10 +114,10 @@ cd iosApp && xcodebuild -workspace iosApp.xcworkspace -scheme iosApp -configurat
 - ✅ Bottom navigation menu
 - ✅ Material3 theming with brand colors
 - ✅ Drawable icon system
-- 🔄 Firebase Auth integration (in progress)
-- 🔄 Local data persistence with SQLite
-- ⏳ AI Assistant backend (Phase 1)
-- ⏳ Synchronization & offline support (Phase 2)
+- ✅  Firebase Auth integration (in progress)
+- ✅  Local data persistence with SQLite
+- ✅  AI Assistant backend (Phase 1)
+- ✅  Synchronization & offline support (Phase 2)
 
 ## Contributing
 
